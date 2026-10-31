@@ -1,168 +1,117 @@
-# AIORI-3 Hackathon — Problem Statement PS-020
+# AIORI-3 Hackathon — PS-020: Local SRv6 Path Steering and Measured Failure Recovery
 
-<div align="center">
-
-[![Presentation](https://img.shields.io/badge/Presentation-PDF_Slides-blue?style=for-the-badge&logo=adobeacrobatreader)](docs/PS-020_SRv6_Hackathon_Presentation.pdf)
-[![YouTube Walkthrough](https://img.shields.io/badge/YouTube-Video_Demonstration-red?style=for-the-badge&logo=youtube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
-[![Full Testbed Bundle](https://img.shields.io/badge/Google_Drive-Download_Full_1.5GB_Bundle-34A853?style=for-the-badge&logo=googledrive&logoColor=white)](#-full-environment--pre-built-virtual-machines-bundle-15-gb)
-[![Category](https://img.shields.io/badge/Category-6G_%26_Future_Networks-darkgreen?style=for-the-badge)](#)
-[![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)](#)
-
-### **Local SRv6 Path Steering and Measured Failure Recovery**
-**Team Name:** NODEX &nbsp;|&nbsp; **Team Code:** TC178  
-**Repository:** [aiori-hackathon/A3-PS020-TC178](https://github.com/aiori-hackathon/A3-PS020-TC178)
-
-</div>
+**Team:** NODEX (TC178)  
+**Track:** 6G & Future Networks  
+**Members:** Mithil Khobragade ([khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com)) & Sharad Kalmani ([sharadkalamani3@gmail.com](mailto:sharadkalamani3@gmail.com))  
+**Quick Links:** [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf) | [Video Demonstration (YouTube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
 
 ---
 
-## 👥 Team Members
+## What This Project Is About
 
-* **Mithil Khobragade** — [khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com)
-* **Sharad Kalmani** — [sharadkalamani3@gmail.com](mailto:sharadkalamani3@gmail.com)
+In normal IPv6 networks, routers decide where to forward packets on a hop-by-hop basis using standard routing tables (OSPFv3, BGP, etc.). If you want traffic to follow a specific path or quickly switch to a backup path when a link fails, standard routing protocols can take seconds to recalculate and converge.
 
----
+With **Segment Routing over IPv6 (SRv6)**, the source or ingress router attaches an ordered list of Segment Identifiers (SIDs) directly inside the IPv6 extension header (SRH). Intermediate routers simply forward the packet according to these instructions without having to maintain state for every individual flow.
 
-## 📌 Executive Summary
-
-Traditional IPv6 networks forward traffic hop-by-hop using local routing tables, lacking fine-grained source control and dynamic steering capabilities. **Segment Routing over IPv6 (SRv6)** overcomes these limitations by encoding an ordered list of Segment Identifiers (SIDs) directly inside the IPv6 Segment Routing Header (SRH).
-
-This project constructs a reproducible virtualized network testbed in **GNS3** to demonstrate:
-1. **Explicit Path Steering:** Steering ingress traffic through deterministic network paths (Path A via Router-3 vs. Path B via Router-4).
-2. **Measured Failure Recovery:** Fast, local policy switchover upon link failure with sub-second convergence and packet loss measurements.
-3. **Comparative Analysis:** Quantitative comparison against standard hop-by-hop IPv6 routing under identical failure conditions.
+In this project, we built a virtualized 5-router core network in GNS3 to:
+1. Steer traffic explicitly across a primary path (via Router-3) vs. a backup path (via Router-4).
+2. Measure what happens when the primary path drops, and switch traffic locally to the backup path with minimal delay and packet loss.
+3. Compare the SRv6 behavior directly against baseline hop-by-hop IPv6 routing.
 
 ---
 
-## 📦 Full Environment & Pre-Built Virtual Machines Bundle (1.5 GB)
+## Network Topology
 
-For evaluators and researchers who want to run the full environment out-of-the-box without manual image conversion or tool downloads, we have packaged the complete testbed bundle into a single high-speed download archive:
-
-> 📥 **[Click Here to Download Full 1.5 GB Testbed Archive (Google Drive)](PASTE_GOOGLE_DRIVE_LINK_HERE)**
-
-### Contents of the 1.5 GB Bundle:
-| Artifact | Type | Description |
-| :--- | :--- | :--- |
-| `debian-13-nocloud-amd64.qcow2` | OS QCOW2 Disk (390 MB) | Linux Kernel 6.x pre-configured with SRv6 routing subsystem & `iproute2` |
-| `GNS3 VM.ova` | Virtual Appliance (833 MB) | Official GNS3 VirtualBox virtual machine with nested emulation support |
-| `VirtualBox-7.2.22-Win.exe` | Hypervisor Installer (170 MB) | Oracle VirtualBox hypervisor runtime for Windows hosts |
-| `aiora.gns3` & `project-files/` | Complete Project | Pre-linked GNS3 topology with all node IDs, dynamips cache, and interface bindings |
-| `aiora path normal.gns3` | Baseline Project | Pre-configured comparative hop-by-hop IPv6 topology |
-
----
-
-## 🏗️ Network Architecture & Topology
-
-<div align="center">
+The network consists of two end-hosts and 5 core Linux routers running Debian with native Linux kernel SRv6 support:
 
 ```mermaid
 flowchart LR
-    PC1["Source Host\n(PC1)"] --> R1["Ingress Router\n(Router-1)"]
-    R1 --> R2["Steering Router\n(Router-2)"]
+    PC1["Source\n(PC1)"] --> R1["Ingress\n(Router-1)"]
+    R1 --> R2["Path Steering Node\n(Router-2)"]
     
-    subgraph Disjoint Core Paths
-        R2 -->|Primary SID: R3| R3["Core Router 3\n(Router-3)"]
-        R2 -.->|Backup SID: R4| R4["Core Router 4\n(Router-4)"]
-        R3 --> R5["Egress Router\n(Router-5)"]
+    subgraph Core Network
+        R2 -->|Primary Path A| R3["Core Router 3\n(SID: R3)"]
+        R2 -.->|Backup Path B| R4["Core Router 4\n(SID: R4)"]
+        R3 --> R5["Egress Decap\n(Router-5)"]
         R4 -.-> R5
     end
     
-    R5 --> PC2["Destination Host\n(PC2)"]
-
-    classDef primary fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef backup fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 5 5;
-    class R3 primary;
-    class R4 backup;
+    R5 --> PC2["Destination\n(PC2)"]
 ```
 
-</div>
+### Visual Topology from GNS3
+![GNS3 Topology](docs/assets/topology_overview.jpeg)
 
-### Topology Overview in GNS3
-![Topology Overview](docs/assets/topology_overview.jpeg)
-
-* **Primary Path (Path A):** `PC1 ➔ Router-1 ➔ Router-2 ➔ Router-3 ➔ Router-5 ➔ PC2`
-* **Backup Path (Path B):** `PC1 ➔ Router-1 ➔ Router-2 ➔ Router-4 ➔ Router-5 ➔ PC2`
-* **Failure Simulation:** Automated link degradation/cut between `Router-2` and `Router-3` triggering instant policy steering to `Router-4`.
+* **Primary Path (Path A):** `PC1 -> Router-1 -> Router-2 -> Router-3 -> Router-5 -> PC2`
+* **Backup Path (Path B):** `PC1 -> Router-1 -> Router-2 -> Router-4 -> Router-5 -> PC2`
+* **Failure Trigger:** Dropping the link between Router-2 and Router-3 and checking how quickly Router-2 updates its encapsulation rule to send traffic via Router-4.
 
 ---
 
-## 📂 Project Structure
+## Repository Contents
 
 ```text
-├── README.md                                    # Project documentation and summary
-├── .gitignore                                   # Standard repository exclusions
+├── README.md                                    # This document
+├── .gitignore                                   # Ignore temporary VM images, disks, and runtime caches
 ├── topologies/
 │   ├── aiora/
-│   │   ├── aiora.gns3                           # SRv6 path-steering GNS3 project topology
-│   │   └── project-files/                       # GNS3 node configurations and dynamips cache
+│   │   ├── aiora.gns3                           # Main SRv6 path-steering GNS3 project
+│   │   └── project-files/                       # Node configs, dynamips cache, and interface mappings
 │   └── aiora_path_normal/
-│       ├── aiora path normal.gns3               # Baseline hop-by-hop IPv6 GNS3 topology
-│       └── project-files/                       # Baseline topology files
+│       ├── aiora path normal.gns3               # Baseline hop-by-hop IPv6 GNS3 project
+│       └── project-files/                       # Baseline project files
 ├── docs/
-│   ├── PS-020_SRv6_Hackathon_Presentation.pdf   # Official team presentation slides
+│   ├── PS-020_SRv6_Hackathon_Presentation.pdf   # Slide deck presented to judges
 │   ├── PS-020_SRv6_Path_Steering_Hackathon_Bullet_Points.pdf
-│   ├── setup-guide.md                           # Step-by-step setup & troubleshooting guide
-│   └── assets/                                  # High-resolution screenshots and diagrams
+│   ├── setup-guide.md                           # Step-by-step reproduction and setup notes
+│   └── assets/                                  # Topology screenshots and captures
 └── scripts/
-    ├── setup_srv6_steering.sh                   # Linux kernel SRv6 SID encapsulation script
-    └── simulate_link_failure.sh                 # Automated link failure & recovery benchmark
+    ├── setup_srv6_steering.sh                   # Shell script to configure SRv6 SIDs on Debian nodes
+    └── simulate_link_failure.sh                 # Script to drop active link and measure switchover time
 ```
 
 ---
 
-## 🚀 Quick Start & Reproduction
+## How to Run in GNS3
 
-### 1. Requirements & Prerequisites
-Ensure you have the following installed on your host system:
-* [GNS3 GUI & Server](https://www.gns3.com/) (v2.2+)
-* [VirtualBox](https://www.virtualbox.org/) or VMware Workstation
-* GNS3 VM with nested virtualization / QEMU support
-* Debian Cloud Image (or similar Linux kernel 5.4+ with `iproute2` SRv6 support)
+### 1. Requirements
+* GNS3 (version 2.2 or higher)
+* GNS3 VM running in VirtualBox or VMware
+* Debian Cloud QCOW2 image (Linux kernel with `CONFIG_IPV6_SEG6_LWTUNNEL=y`, default in Debian 12/13)
 
-> 💡 *Detailed step-by-step installation instructions, direct image download links, and KVM/RAM troubleshooting solutions are available in our [Setup Guide](docs/setup-guide.md).*
+> *Tip if running on systems without nested virtualization:* If GNS3 shows `KVM acceleration cannot be used (/dev/kvm doesn't exist)`, edit `/etc/gns3/gns3_server.conf` inside the GNS3 VM and add `enable_kvm = false` under `[Qemu]`. Also keep router RAM around 512 MB to prevent running out of host memory. (See [docs/setup-guide.md](docs/setup-guide.md) for full details).
 
-### 2. Running the Topologies
+### 2. Loading the Project
 1. Open GNS3 and load `topologies/aiora/aiora.gns3`.
-2. Start all nodes (`PC1`, `Router-1` through `Router-5`, `PC2`).
-3. Apply the SRv6 routing policies:
+2. Start the routers and PC nodes.
+3. Open a console on **Router-2** and apply the primary steering rule:
    ```bash
-   # On Router-2 (Activate Primary Path via Router-3):
    sudo ./scripts/setup_srv6_steering.sh r2-primary
    ```
-4. Verify end-to-end connectivity from `PC1` to `PC2`:
-   ```bash
-   ping6 fd00:0:0:200::1
-   ```
+4. Start a continuous ping from `PC1` to `PC2` (`fd00:0:0:200::1`).
 
-### 3. Measuring Link Failure Recovery
-Run the benchmark script on `Router-2` to drop the active link and switch to the backup path:
+### 3. Testing Link Failure and Recovery
+On **Router-2**, run the failure simulation script:
 ```bash
 sudo ./scripts/simulate_link_failure.sh
 ```
+This drops interface `eth1` (towards Router-3) and immediately replaces the routing encapsulation to use Router-4's SID list.
 
 ---
 
-## 📊 Key Results & Findings
+## Observed Results
 
-| Metric | Traditional Hop-by-Hop IPv6 | SRv6 Local Path Steering |
+| Parameter | Standard Hop-by-Hop IPv6 | SRv6 Local Path Steering |
 | :--- | :--- | :--- |
-| **Path Determinism** | Dynamic / SPF-computed | Fully Source-Determined |
-| **Failure Detection & Switchover** | 2000 ms – 5000 ms (Routing Protocol Convergence) | **< 50 ms** (Local policy switchover) |
-| **Packet Loss During Cut** | Significant | Minimal / Near-zero |
-| **Intermediate State Required** | Per-flow routing table state across all core nodes | **Stateless Core** (Instructions encoded in SRH) |
+| **Path Selection** | Decided independently at each router | Strictly specified at ingress (Router-2) |
+| **Failover Mechanism** | Protocol re-convergence (OSPFv3 / BGP timer dependent) | Local routing table policy update |
+| **Convergence / Recovery Time** | ~2.5 to 5.0 seconds | **Under 50 ms** |
+| **Core State** | Every router must store full routing tables | Core routers only need to recognize their own SID (Stateless core) |
 
 ---
 
-## 📺 Presentation & Deliverables
+## Project Presentation & Deliverables
 
-* **Presentation Slides:** [docs/PS-020_SRv6_Hackathon_Presentation.pdf](docs/PS-020_SRv6_Hackathon_Presentation.pdf)
-* **Video Demonstration:** [YouTube Presentation Link](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
-
----
-
-## 📖 Standards & RFC References
-
-* **RFC 8402** — *Segment Routing Architecture* (IETF, 2018)
-* **RFC 8754** — *IPv6 Segment Routing Header (SRH)* (IETF, 2020)
-* **RFC 8986** — *SRv6 Network Programming* (IETF, 2021)
-* **RFC 8200** — *Internet Protocol, Version 6 (IPv6) Specification*
+* **Slide Deck:** [docs/PS-020_SRv6_Hackathon_Presentation.pdf](docs/PS-020_SRv6_Hackathon_Presentation.pdf)
+* **Video Presentation:** [Watch on YouTube](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
+* **Standards Followed:** RFC 8402 (SR Architecture), RFC 8754 (IPv6 SRH), RFC 8986 (SRv6 Network Programming).
