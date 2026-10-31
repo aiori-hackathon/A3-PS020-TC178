@@ -1,0 +1,22 @@
+# Virtual machine images and binary disks
+*.ova
+*.qcow2
+*.img
+*.vmdk
+*.vdi
+*.iso
+*.exe
+*.zip
+
+# GNS3 temporary state / captures
+*.pcap
+*.pcapng
+*.tmp
+*.log
+
+# Dynamips JIT cache
+dynamips_log.txt
+
+# OS artifacts
+Thumbs.db
+.DS_Store

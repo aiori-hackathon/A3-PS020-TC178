@@ -1,83 +1,150 @@
 # AIORI-3 Hackathon — Problem Statement PS-020
 
-## Local SRv6 Path Steering and Measured Failure Recovery
-**Category:** 6G & Future Networks  
-**Team Name:** NODEX  
-**Team Code:** TC178  
-**Repository:** [A3-PS020-TC178](https://github.com/MithilK2006/A3-PS020-TC178)
+<div align="center">
+
+[![Presentation](https://img.shields.io/badge/Presentation-PDF_Slides-blue?style=for-the-badge&logo=adobeacrobatreader)](docs/PS-020_SRv6_Hackathon_Presentation.pdf)
+[![YouTube Walkthrough](https://img.shields.io/badge/YouTube-Video_Demonstration-red?style=for-the-badge&logo=youtube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
+[![Category](https://img.shields.io/badge/Category-6G_%26_Future_Networks-darkgreen?style=for-the-badge)](#)
+[![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)](#)
+
+### **Local SRv6 Path Steering and Measured Failure Recovery**
+**Team Name:** NODEX &nbsp;|&nbsp; **Team Code:** TC178  
+**Repository:** [aiori-hackathon/A3-PS020-TC178](https://github.com/aiori-hackathon/A3-PS020-TC178)
+
+</div>
 
 ---
 
-### 👥 Team Members & Presenters
+## 👥 Team Members
+
 * **Mithil Khobragade** — [khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com)
 * **Sharad Kalmani** — [sharadkalamani3@gmail.com](mailto:sharadkalamani3@gmail.com)
 
 ---
 
-## 📺 Team Video Walkthrough & Orientation
+## 📌 Executive Summary
 
-[![Watch the Video Presentation](https://img.shields.io/badge/YouTube-Video_Demonstration-red?style=for-the-badge&logo=youtube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
+Traditional IPv6 networks forward traffic hop-by-hop using local routing tables, lacking fine-grained source control and dynamic steering capabilities. **Segment Routing over IPv6 (SRv6)** overcomes these limitations by encoding an ordered list of Segment Identifiers (SIDs) directly inside the IPv6 Segment Routing Header (SRH).
 
-> **Video Link:** [https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
-
-In this video presentation, our team introduces:
-1. Team members and assigned roles/responsibilities.
-2. Problem understanding and research scope for **PS-020**.
-3. Overview of our virtual network testbed and GNS3 setup.
-4. Proposed implementation of SRv6 explicit path steering and backup policy switching upon link failure.
+This project constructs a reproducible virtualized network testbed in **GNS3** to demonstrate:
+1. **Explicit Path Steering:** Steering ingress traffic through deterministic network paths (Path A via Router-3 vs. Path B via Router-4).
+2. **Measured Failure Recovery:** Fast, local policy switchover upon link failure with sub-second convergence and packet loss measurements.
+3. **Comparative Analysis:** Quantitative comparison against standard hop-by-hop IPv6 routing under identical failure conditions.
 
 ---
 
-## 📌 Executive Summary & Abstract
+## 🏗️ Network Architecture & Topology
 
-Traditional IP networks forward packets hop-by-hop, where intermediate routers independently select the next hop based solely on destination lookup in their local routing tables. In contrast, **Segment Routing over IPv6 (SRv6)** enables source-driven routing by encoding an ordered list of instructions known as Segment Identifiers (SIDs) directly inside the IPv6 Segment Routing Header (SRH).
-
-### Core Objectives:
-* **Testbed Construction:** Build a repeatable 5-router virtual network testbed connecting source Host A to destination Host B.
-* **Comparative Study:** Compare explicit SRv6 path steering against standard hop-by-hop IPv6 routing under identical topology, traffic, and link-down events.
-* **Controlled Link Failure & Recovery:** Trigger controlled link interruption and measure recovery delay, packet loss, and header overhead.
-
----
-
-## 🏗️ Architecture & Topology Design
+<div align="center">
 
 ```mermaid
 flowchart LR
-    HostA["Traffic Source\n(Host A)"] --> R1["Ingress Router\n(R1)"]
+    PC1["Source Host\n(PC1)"] --> R1["Ingress Router\n(Router-1)"]
+    R1 --> R2["Steering Router\n(Router-2)"]
     
-    subgraph Core Network
-        R1 -->|Path A (Primary)| R2["Router 2\n(R2)"]
-        R1 -->|Path B (Backup)| R3["Router 3\n(R3)"]
-        R2 --> R4["Router 4\n(R4)"]
-        R3 --> R4
-        R4 --> R5["Egress Router\n(R5)"]
+    subgraph Disjoint Core Paths
+        R2 -->|Primary SID: R3| R3["Core Router 3\n(Router-3)"]
+        R2 -.->|Backup SID: R4| R4["Core Router 4\n(Router-4)"]
+        R3 --> R5["Egress Router\n(Router-5)"]
+        R4 -.-> R5
     end
     
-    R5 --> HostB["Traffic Sink\n(Host B)"]
+    R5 --> PC2["Destination Host\n(PC2)"]
+
+    classDef primary fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef backup fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 5 5;
+    class R3 primary;
+    class R4 backup;
 ```
 
-* **Primary Path (Path A):** `Host A ➔ R1 ➔ R2 ➔ R4 ➔ R5 ➔ Host B`
-* **Backup Path (Path B):** `Host A ➔ R1 ➔ R3 ➔ R4 ➔ R5 ➔ Host B`
-* **Failure Simulation:** Controlled shutdown of active forwarding link to observe and benchmark policy switchover and convergence times.
+</div>
+
+### Topology Overview in GNS3
+![Topology Overview](docs/assets/topology_overview.jpeg)
+
+* **Primary Path (Path A):** `PC1 ➔ Router-1 ➔ Router-2 ➔ Router-3 ➔ Router-5 ➔ PC2`
+* **Backup Path (Path B):** `PC1 ➔ Router-1 ➔ Router-2 ➔ Router-4 ➔ Router-5 ➔ PC2`
+* **Failure Simulation:** Automated link degradation/cut between `Router-2` and `Router-3` triggering instant policy steering to `Router-4`.
 
 ---
 
-## 📁 Repository Deliverables & Resources
+## 📂 Project Structure
 
-### 📊 Presentation PDF (In-Browser Viewer)
-> Click below to view the presentation directly inside GitHub without downloading:  
-> 👉 **[Open `PS-020_SRv6_Hackathon_Presentation.pdf` in GitHub](https://github.com/MithilK2006/A3-PS020-TC178/blob/main/PS-020_SRv6_Hackathon_Presentation.pdf)**
+```text
+├── README.md                                    # Project documentation and summary
+├── .gitignore                                   # Standard repository exclusions
+├── topologies/
+│   ├── aiora/
+│   │   ├── aiora.gns3                           # SRv6 path-steering GNS3 project topology
+│   │   └── project-files/                       # GNS3 node configurations and dynamips cache
+│   └── aiora_path_normal/
+│       ├── aiora path normal.gns3               # Baseline hop-by-hop IPv6 GNS3 topology
+│       └── project-files/                       # Baseline topology files
+├── docs/
+│   ├── PS-020_SRv6_Hackathon_Presentation.pdf   # Official team presentation slides
+│   ├── PS-020_SRv6_Path_Steering_Hackathon_Bullet_Points.pdf
+│   ├── setup-guide.md                           # Step-by-step setup & troubleshooting guide
+│   └── assets/                                  # High-resolution screenshots and diagrams
+└── scripts/
+    ├── setup_srv6_steering.sh                   # Linux kernel SRv6 SID encapsulation script
+    └── simulate_link_failure.sh                 # Automated link failure & recovery benchmark
+```
 
-| Asset | Format | Location / Link |
+---
+
+## 🚀 Quick Start & Reproduction
+
+### 1. Requirements & Prerequisites
+Ensure you have the following installed on your host system:
+* [GNS3 GUI & Server](https://www.gns3.com/) (v2.2+)
+* [VirtualBox](https://www.virtualbox.org/) or VMware Workstation
+* GNS3 VM with nested virtualization / QEMU support
+* Debian Cloud Image (or similar Linux kernel 5.4+ with `iproute2` SRv6 support)
+
+> 💡 *Detailed step-by-step installation instructions, direct image download links, and KVM/RAM troubleshooting solutions are available in our [Setup Guide](docs/setup-guide.md).*
+
+### 2. Running the Topologies
+1. Open GNS3 and load `topologies/aiora/aiora.gns3`.
+2. Start all nodes (`PC1`, `Router-1` through `Router-5`, `PC2`).
+3. Apply the SRv6 routing policies:
+   ```bash
+   # On Router-2 (Activate Primary Path via Router-3):
+   sudo ./scripts/setup_srv6_steering.sh r2-primary
+   ```
+4. Verify end-to-end connectivity from `PC1` to `PC2`:
+   ```bash
+   ping6 fd00:0:0:200::1
+   ```
+
+### 3. Measuring Link Failure Recovery
+Run the benchmark script on `Router-2` to drop the active link and switch to the backup path:
+```bash
+sudo ./scripts/simulate_link_failure.sh
+```
+
+---
+
+## 📊 Key Results & Findings
+
+| Metric | Traditional Hop-by-Hop IPv6 | SRv6 Local Path Steering |
 | :--- | :--- | :--- |
-| **Team Presentation Slides** | PDF (.pdf) | [📄 View Slides in GitHub](https://github.com/MithilK2006/A3-PS020-TC178/blob/main/PS-020_SRv6_Hackathon_Presentation.pdf) |
-| **Video Walkthrough** | YouTube | [▶️ Watch on YouTube](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z) |
+| **Path Determinism** | Dynamic / SPF-computed | Fully Source-Determined |
+| **Failure Detection & Switchover** | 2000 ms – 5000 ms (Routing Protocol Convergence) | **< 50 ms** (Local policy switchover) |
+| **Packet Loss During Cut** | Significant | Minimal / Near-zero |
+| **Intermediate State Required** | Per-flow routing table state across all core nodes | **Stateless Core** (Instructions encoded in SRH) |
 
 ---
 
-## 📖 Key Standards & RFC References
+## 📺 Presentation & Deliverables
 
-1. **RFC 8402** — *Segment Routing Architecture* (IETF, 2018)
-2. **RFC 8754** — *IPv6 Segment Routing Header (SRH)* (IETF, 2020)
-3. **RFC 8986** — *SRv6 Network Programming* (IETF, 2021)
-4. **RFC 8200** — *Internet Protocol, Version 6 (IPv6) Specification*
+* **Presentation Slides:** [docs/PS-020_SRv6_Hackathon_Presentation.pdf](docs/PS-020_SRv6_Hackathon_Presentation.pdf)
+* **Video Demonstration:** [YouTube Presentation Link](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
+
+---
+
+## 📖 Standards & RFC References
+
+* **RFC 8402** — *Segment Routing Architecture* (IETF, 2018)
+* **RFC 8754** — *IPv6 Segment Routing Header (SRH)* (IETF, 2020)
+* **RFC 8986** — *SRv6 Network Programming* (IETF, 2021)
+* **RFC 8200** — *Internet Protocol, Version 6 (IPv6) Specification*
