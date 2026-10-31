@@ -1,0 +1,173 @@
+# ==============================================================================
+# AIORI-3 Hackathon (PS-020): Local SRv6 Path Steering Multi-Node Testbed
+# Team: NODEX | Code: TC178
+#
+# Usage:
+#   docker compose up -d
+#   docker exec -it srv6-pc1 ping6 -c 5 fd00:0:0:200::1
+#   docker exec -it srv6-r2 /root/switch_to_backup.sh
+#   docker compose down
+# ==============================================================================
+
+services:
+  pc1:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.router
+    container_name: srv6-pc1
+    hostname: pc1
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_h1_r1:
+        ipv6_address: fd00:0:0:100::1
+    environment:
+      - NODE_ROLE=pc1
+
+  router-1:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.router
+    container_name: srv6-r1
+    hostname: router-1
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_h1_r1:
+        ipv6_address: fd00:0:0:100::254
+      net_r1_r2:
+        ipv6_address: fd00:0:0:12::1
+    environment:
+      - NODE_ROLE=router-1
+    depends_on:
+      - pc1
+
+  router-2:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.router
+    container_name: srv6-r2
+    hostname: router-2
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_r1_r2:
+        ipv6_address: fd00:0:0:12::2
+      net_r2_r3:
+        ipv6_address: fd00:0:0:23::2
+      net_r2_r4:
+        ipv6_address: fd00:0:0:24::2
+    environment:
+      - NODE_ROLE=router-2
+    depends_on:
+      - router-1
+
+  router-3:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.router
+    container_name: srv6-r3
+    hostname: router-3
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_r2_r3:
+        ipv6_address: fd00:0:0:23::3
+      net_r3_r5:
+        ipv6_address: fd00:0:0:35::3
+    environment:
+      - NODE_ROLE=router-3
+    depends_on:
+      - router-2
+
+  router-4:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.router
+    container_name: srv6-r4
+    hostname: router-4
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_r2_r4:
+        ipv6_address: fd00:0:0:24::4
+      net_r4_r5:
+        ipv6_address: fd00:0:0:45::4
+    environment:
+      - NODE_ROLE=router-4
+    depends_on:
+      - router-2
+
+  router-5:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.router
+    container_name: srv6-r5
+    hostname: router-5
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_r3_r5:
+        ipv6_address: fd00:0:0:35::5
+      net_r4_r5:
+        ipv6_address: fd00:0:0:45::5
+      net_r5_h2:
+        ipv6_address: fd00:0:0:200::254
+    environment:
+      - NODE_ROLE=router-5
+    depends_on:
+      - router-3
+      - router-4
+
+  pc2:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.router
+    container_name: srv6-pc2
+    hostname: pc2
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_r5_h2:
+        ipv6_address: fd00:0:0:200::1
+    environment:
+      - NODE_ROLE=pc2
+    depends_on:
+      - router-5
+
+networks:
+  net_h1_r1:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:0:0:100::/64
+  net_r1_r2:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:0:0:12::/64
+  net_r2_r3:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:0:0:23::/64
+  net_r2_r4:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:0:0:24::/64
+  net_r3_r5:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:0:0:35::/64
+  net_r4_r5:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:0:0:45::/64
+  net_r5_h2:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: fd00:0:0:200::/64

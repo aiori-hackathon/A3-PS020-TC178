@@ -4,7 +4,7 @@
 **Track:** 6G & Future Networks  
 **Team Name:** NODEX &nbsp;|&nbsp; **Team Code:** TC178  
 **Team Members:** Mithil Khobragade ([khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com)) &bull; Sharad Kalmani ([sharadkalamani3@gmail.com](mailto:sharadkalamani3@gmail.com))  
-**Deliverables:** [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf) &bull; [Video Walkthrough (YouTube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z) &bull; [1.5 GB Testbed Archive (Google Drive)](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing)
+**Deliverables:** [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf) &bull; [Video Walkthrough (YouTube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z) &bull; [1.5 GB Testbed Archive (Google Drive)](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing) &bull; [Docker Quickstart](#method-a-instant-docker-testbed-recommended)
 
 ---
 
@@ -125,7 +125,11 @@ Both testbeds were evaluated under identical parameters: continuous 100 ms ICMPv
 ```text
 .
 ├── README.md                                    # Project documentation and test findings
-├── .gitignore                                   # Standard exclusions (VM disks, logs, caches)
+├── docker-compose.yml                           # 1-command reproducible multi-container testbed
+├── docker/
+│   ├── Dockerfile.router                        # Debian router image with iproute2 & seg6 tools
+│   └── entrypoint.sh                            # Kernel SRv6 bootstrapper and path toggles
+├── .gitignore                                   # Exclusions (VM images, logs, caches)
 ├── topologies/
 │   ├── aiora/                                   # Primary SRv6 path-steering GNS3 project
 │   │   ├── aiora.gns3
@@ -145,10 +149,34 @@ Both testbeds were evaluated under identical parameters: continuous 100 ms ICMPv
 
 ---
 
-## 5. Downloads & Reproduction Guide
+## 5. Reproduction & Evaluation Guide
 
-### Full Pre-Configured Testbed Bundle (1.5 GB)
-For evaluators who prefer running the pre-packaged lab directly without downloading separate operating system images:
+### Method A: Instant Docker Testbed (Recommended)
+Evaluators can spin up the full 7-node SRv6 environment in seconds without needing GNS3 or VirtualBox:
+
+```bash
+# 1. Start all 7 nodes and isolated IPv6 networks
+docker compose up -d
+
+# 2. Verify end-to-end SRv6 connectivity (PC1 -> PC2)
+docker exec -it srv6-pc1 ping6 -c 4 fd00:0:0:200::1
+
+# 3. Trigger local failure recovery on Router-2 (switches to Path B via Router-4)
+docker exec -it srv6-r2 /root/switch_to_backup.sh
+
+# 4. Restore primary path
+docker exec -it srv6-r2 /root/switch_to_primary.sh
+
+# 5. Tear down testbed when finished
+docker compose down
+```
+
+---
+
+### Method B: GNS3 Visual Testbed (Full Emulation & Packet Analysis)
+
+#### Pre-Configured Testbed Bundle (1.5 GB)
+For evaluators who prefer running the pre-packaged GNS3 lab with official VM appliances:
 
 > 📦 **[Download Complete Testbed Archive (`aiora.zip` - 1.5 GB via Google Drive)](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing)**
 
@@ -159,7 +187,7 @@ For evaluators who prefer running the pre-packaged lab directly without download
 | `VirtualBox-7.2.22-175245-Win.exe` | Oracle VirtualBox runtime for Windows |
 | `aiora.gns3` + `project-files/` | Complete pre-linked GNS3 topology ready to launch |
 
-### Quick Start
+#### Running in GNS3
 1. Open GNS3 and load `topologies/aiora/aiora.gns3`.
 2. Start all nodes.
 3. On **Router-2**, run:
@@ -172,7 +200,7 @@ For evaluators who prefer running the pre-packaged lab directly without download
    sudo ./scripts/simulate_link_failure.sh
    ```
 
-*(For detailed hypervisor settings, RAM tuning, and resolving KVM acceleration warnings, refer to [docs/setup-guide.md](docs/setup-guide.md).)*
+*(For hypervisor settings, RAM tuning, and resolving KVM acceleration warnings, refer to [docs/setup-guide.md](docs/setup-guide.md).)*
 
 ---
 

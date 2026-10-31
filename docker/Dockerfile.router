@@ -1,0 +1,29 @@
+# ==============================================================================
+# AIORI-3 Hackathon (PS-020): Debian-based SRv6 Router Node Image
+# Team: NODEX | Code: TC178
+# ==============================================================================
+
+FROM debian:bookworm-slim
+
+# Avoid interactive prompts during apt installs
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install essential Linux networking and debugging utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    iproute2 \
+    iputils-ping \
+    iputils-tracepath \
+    traceroute \
+    tcpdump \
+    procps \
+    curl \
+    iptables \
+    nano \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy bootstrap entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Use entrypoint to initialize kernel SRv6 policies and keep container running
+ENTRYPOINT ["/entrypoint.sh"]
