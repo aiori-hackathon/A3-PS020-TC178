@@ -4,6 +4,7 @@
 
 [![Presentation](https://img.shields.io/badge/Presentation-PDF_Slides-blue?style=for-the-badge&logo=adobeacrobatreader)](docs/PS-020_SRv6_Hackathon_Presentation.pdf)
 [![YouTube Walkthrough](https://img.shields.io/badge/YouTube-Video_Demonstration-red?style=for-the-badge&logo=youtube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)
+[![Full Testbed Bundle](https://img.shields.io/badge/Google_Drive-Download_Full_1.5GB_Bundle-34A853?style=for-the-badge&logo=googledrive&logoColor=white)](#-full-environment--pre-built-virtual-machines-bundle-15-gb)
 [![Category](https://img.shields.io/badge/Category-6G_%26_Future_Networks-darkgreen?style=for-the-badge)](#)
 [![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)](#)
 
@@ -30,6 +31,23 @@ This project constructs a reproducible virtualized network testbed in **GNS3** t
 1. **Explicit Path Steering:** Steering ingress traffic through deterministic network paths (Path A via Router-3 vs. Path B via Router-4).
 2. **Measured Failure Recovery:** Fast, local policy switchover upon link failure with sub-second convergence and packet loss measurements.
 3. **Comparative Analysis:** Quantitative comparison against standard hop-by-hop IPv6 routing under identical failure conditions.
+
+---
+
+## 📦 Full Environment & Pre-Built Virtual Machines Bundle (1.5 GB)
+
+For evaluators and researchers who want to run the full environment out-of-the-box without manual image conversion or tool downloads, we have packaged the complete testbed bundle into a single high-speed download archive:
+
+> 📥 **[Click Here to Download Full 1.5 GB Testbed Archive (Google Drive)](PASTE_GOOGLE_DRIVE_LINK_HERE)**
+
+### Contents of the 1.5 GB Bundle:
+| Artifact | Type | Description |
+| :--- | :--- | :--- |
+| `debian-13-nocloud-amd64.qcow2` | OS QCOW2 Disk (390 MB) | Linux Kernel 6.x pre-configured with SRv6 routing subsystem & `iproute2` |
+| `GNS3 VM.ova` | Virtual Appliance (833 MB) | Official GNS3 VirtualBox virtual machine with nested emulation support |
+| `VirtualBox-7.2.22-Win.exe` | Hypervisor Installer (170 MB) | Oracle VirtualBox hypervisor runtime for Windows hosts |
+| `aiora.gns3` & `project-files/` | Complete Project | Pre-linked GNS3 topology with all node IDs, dynamips cache, and interface bindings |
+| `aiora path normal.gns3` | Baseline Project | Pre-configured comparative hop-by-hop IPv6 topology |
 
 ---
 
