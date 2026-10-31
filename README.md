@@ -26,17 +26,17 @@
 
 ```mermaid
 flowchart LR
-    PC1["Source Host\n(PC1)"] --> R1["Ingress Node\n(R1)"]
-    R1 --> R2["Headend / Policy Node\n(R2)"]
+    PC1["Source Host (PC1)"] --> R1["Ingress Node (R1)"]
+    R1 --> R2["Policy Headend (R2)"]
     
     subgraph Core Network
-        R2 -->|Primary: SID R3| R3["Core Router 3\n(R3 - End)"]
-        R2 -.->|Backup: SID R4| R4["Core Router 4\n(R4 - End)"]
-        R3 --> R5["Egress Decap\n(R5 - End.DX6)"]
+        R2 -->|"Primary Path (R3)"| R3["Core Router 3 (End)"]
+        R2 -.->|"Backup Path (R4)"| R4["Core Router 4 (End)"]
+        R3 --> R5["Egress Decap (End.DX6)"]
         R4 -.-> R5
     end
     
-    R5 --> PC2["Destination Host\n(PC2)"]
+    R5 --> PC2["Destination Host (PC2)"]
 ```
 
 ![GNS3 Network Topology](docs/assets/topology_overview.jpeg)
