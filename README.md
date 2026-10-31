@@ -3,7 +3,7 @@
 
 | Track & Team | Mentorship & Members | Deliverables & Artifacts |
 | :--- | :--- | :--- |
-| **Track:** 6G & Future Networks<br>**Team Name:** **NODEX**<br>**Team Code:** `TC178` | **Mentor:** Bhagyashri Thorat<br>**Members:** Mithil Khobragade &bull; Sharad Kalmani<br>**Email:** [khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com) | 📄 [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf)<br>▶️ [Video Demonstration](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)<br>📦 [1.5 GB Testbed Bundle](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing)<br>🐳 [Docker Quickstart](#method-a-instant-docker-testbed-recommended) |
+| **Track:** 6G & Future Networks<br>**Team Name:** **NODEX**<br>**Team Code:** `TC178` | **Mentor:** Bhagyashri Thorat<br>**Members:**<br>&bull; Mithil Khobragade ([khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com))<br>&bull; Sharad Kalmani ([sharadkalamani3@gmail.com](mailto:sharadkalamani3@gmail.com)) | 📄 [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf)<br>▶️ [Video Demonstration](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)<br>📦 [1.5 GB Testbed Bundle](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing)<br>🐳 [Docker Quickstart](#method-a-instant-docker-testbed-recommended) |
 
 ---
 
