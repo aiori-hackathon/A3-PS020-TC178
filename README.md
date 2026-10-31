@@ -1,24 +1,23 @@
-# AIORI-3 Hackathon — Problem Statement PS-020
-## Local SRv6 Path Steering and Measured Failure Recovery
+# Local SRv6 Path Steering & Measured Failure Recovery
+#### AIORI-3 Hackathon &mdash; Problem Statement PS-020 (6G & Future Networks)
 
-**Track:** 6G & Future Networks  
-**Team Name:** NODEX &nbsp;|&nbsp; **Team Code:** TC178  
-**Team Members:** Mithil Khobragade ([khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com)) &bull; Sharad Kalmani ([sharadkalamani3@gmail.com](mailto:sharadkalamani3@gmail.com))  
-**Deliverables:** [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf) &bull; [Video Walkthrough (YouTube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z) &bull; [1.5 GB Testbed Archive (Google Drive)](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing) &bull; [Docker Quickstart](#method-a-instant-docker-testbed-recommended)
+| Track & Team | Mentorship & Members | Deliverables & Artifacts |
+| :--- | :--- | :--- |
+| **Track:** 6G & Future Networks<br>**Team Name:** **NODEX**<br>**Team Code:** `TC178` | **Mentor:** Bhagyashri Thorat<br>**Members:** Mithil Khobragade &bull; Sharad Kalmani<br>**Email:** [khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com) | 📄 [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf)<br>▶️ [Video Demonstration](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z)<br>📦 [1.5 GB Testbed Bundle](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing)<br>🐳 [Docker Quickstart](#method-a-instant-docker-testbed-recommended) |
 
 ---
 
-### Quick Summary
+### Executive Testbed Summary
 
-| Parameter | Specification |
+| Parameter | Specification & Observation |
 | :--- | :--- |
-| **Topology** | 7 Nodes: 5 Debian Linux routers (`R1`–`R5`) + 2 end-hosts (`PC1`, `PC2`) |
-| **Emulation Platform** | GNS3 v2.2+ on GNS3 VM (QEMU / KVM) |
-| **SRv6 Implementation** | Linux Kernel native `seg6` subsystem (`iproute2` LWTUNNEL) |
-| **Primary Path (A)** | `PC1 ➔ R1 ➔ R2 ➔ R3 ➔ R5 ➔ PC2` (Active SID: `R3::1`, Egress: `R5::1`) |
-| **Backup Path (B)** | `PC1 ➔ R1 ➔ R2 ➔ R4 ➔ R5 ➔ PC2` (Backup SID: `R4::1`, Egress: `R5::1`) |
-| **Failure Trigger** | Controlled cut on active core link (`R3 ➔ R5` / `R2 ➔ R3`) |
-| **Key Result** | **< 45 ms** local recovery (0–1 packet lost) vs. **~3.8 s** in baseline hop-by-hop IPv6 |
+| **Topology** | 7 Active Nodes: 5 Debian Linux routers (`R1`–`R5`) + 2 end-hosts (`PC1`, `PC2`) |
+| **Deployment Platforms** | **Docker Compose** (Cloud-Native instant spin-up) & **GNS3 v2.2+** (Full QEMU/KVM emulation) |
+| **SRv6 Subsystem** | Linux Kernel native `seg6` / `seg6local` lightweight tunnels (`iproute2` LWTUNNEL) |
+| **Primary Path (A)** | `PC1 ➔ R1 ➔ R2 ➔ R3 ➔ R5 ➔ PC2` &bull; *Active SID:* `R3::1` &bull; *Egress:* `R5::1` |
+| **Backup Path (B)** | `PC1 ➔ R1 ➔ R2 ➔ R4 ➔ R5 ➔ PC2` &bull; *Backup SID:* `R4::1` &bull; *Egress:* `R5::1` |
+| **Failure Event** | Controlled link drop on active core path (`R2 ➔ R3` / `R3 ➔ R5`) |
+| **Measured Convergence** | **41 ms** local policy switchover (**0 packet loss**) vs. **3,820 ms** in baseline IPv6 (**38 packets lost**) |
 
 ---
 
