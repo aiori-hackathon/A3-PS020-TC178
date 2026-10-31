@@ -3,7 +3,7 @@
 
 **Team Name:** NODEX (`TC178`)  
 **Contributors:** Mithil Khobragade ([khobragademithil45@gmail.com](mailto:khobragademithil45@gmail.com)) & Sharad Kalmani ([sharadkalamani3@gmail.com](mailto:sharadkalamani3@gmail.com))  
-**Key Deliverables:** [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf) &bull; [Video Demonstration (YouTube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z) &bull; [GNS3 Topologies](topologies/) &bull; [Test Scripts](scripts/)
+**Key Deliverables:** [Presentation Slides (PDF)](docs/PS-020_SRv6_Hackathon_Presentation.pdf) &bull; [Video Demonstration (YouTube)](https://youtu.be/NiIbHxnKrSQ?si=Obk-cFiCMqS2Yi7Z) &bull; [Full 1.5 GB Testbed Archive (Google Drive)](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing) &bull; [GNS3 Topologies](topologies/) &bull; [Test Scripts](scripts/)
 
 ---
 
@@ -102,7 +102,24 @@ Under SRv6 encapsulation (`mode encap`), the ingress node (R2) pushes an outer I
 
 ---
 
-## 5. Experimental Setup & Step-by-Step Execution
+## 5. Full Pre-Configured Testbed Archive (1.5 GB)
+
+For evaluators and judges who want to spin up the exact virtual testbed out-of-the-box without manual image conversion or hypervisor downloads, we have packaged the complete environment bundle:
+
+> 📥 **[Download Full 1.5 GB Testbed Archive (Google Drive)](https://drive.google.com/file/d/1x7irJYWJQhF7dpy0c6Ws2mx-GJlvGj6S/view?usp=sharing)**
+
+### Contents of `aiora (1).zip`:
+| Component | Size | Role in Testbed |
+| :--- | :--- | :--- |
+| `debian-13-nocloud-amd64.qcow2` | ~390 MB | Debian Linux QEMU router disk image with native SRv6 kernel subsystem enabled |
+| `GNS3 VM.ova` / `.zip` | ~833 MB | Official GNS3 VirtualBox virtual appliance configured with nested virtualization |
+| `VirtualBox-7.2.22-175245-Win.exe` | ~170 MB | Oracle VirtualBox runtime for Windows hosts |
+| `aiora.gns3` & `project-files/` | ~32 KB | Pre-linked GNS3 topology with node IDs, interface maps, and dynamips cache |
+| `aiora path normal.gns3` | ~32 KB | Baseline hop-by-hop IPv6 comparative topology |
+
+---
+
+## 6. Experimental Setup & Step-by-Step Execution
 
 ### Prerequisites
 * GNS3 2.2+ with GNS3 VM (VirtualBox / VMware).
@@ -151,7 +168,7 @@ The script brings down the active interface, immediately updates the routing enc
 
 ---
 
-## 6. Comparative Results & Observations
+## 7. Comparative Results & Observations
 
 | Metric / Parameter | Baseline Hop-by-Hop IPv6 | SRv6 Local Path Steering |
 | :--- | :--- | :--- |
@@ -167,7 +184,7 @@ In standard hop-by-hop IPv6, recovering from a core link failure requires neighb
 
 ---
 
-## 7. Standards References
+## 8. Standards References
 
 1. **RFC 8402** — *Segment Routing Architecture* (IETF, 2018)
 2. **RFC 8754** — *IPv6 Segment Routing Header (SRH)* (IETF, 2020)
